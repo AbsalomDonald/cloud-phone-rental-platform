@@ -26,13 +26,13 @@ type AppShellProps = {
 const iconSets = {
   app: [LayoutDashboard, Smartphone, ClipboardList, Package, Headphones],
   dashboard: [LayoutDashboard, Smartphone, ClipboardList, Headphones],
-  admin: [Home, Users, ClipboardList, Package, Boxes, Smartphone, Headphones, Package, ClipboardList]
+  admin: [Home, Users, ClipboardList, Package, Boxes, Smartphone, Smartphone, Headphones, Package, ClipboardList]
 };
 
 const routeSets = {
   app: ["", "/phones", "/orders", "/renew", "/support"],
   dashboard: ["", "/cloud-phones", "/orders", "/support"],
-  admin: ["", "/users", "/orders", "/plans", "/phones", "/assignments", "/support", "/settings/vmos", "/logs"]
+  admin: ["", "/users", "/orders", "/plans", "/phones", "/assignments", "/test-phone", "/support", "/settings/vmos", "/logs"]
 };
 
 export function AppShell({ basePath, children, locale, menu, title }: AppShellProps) {
