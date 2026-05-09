@@ -1627,10 +1627,12 @@ img {
 
 .h5-sdk-stage {
   --sdk-stage-width: min(436px, calc(100vw - 48px));
+  --android-nav-height: 38px;
   width: var(--sdk-stage-width);
   min-width: 320px;
   aspect-ratio: 436 / 696;
-  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) var(--android-nav-height);
   overflow: visible;
   background: #000;
 }
@@ -1648,6 +1650,13 @@ img {
   inset: 0;
   z-index: 5;
   overflow: visible;
+}
+
+.phone-screen-area {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: #000;
 }
 
 .phone-render-layer > div {
@@ -1720,16 +1729,13 @@ img {
 }
 
 .android-nav-bar {
-  position: absolute;
   z-index: 30;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 38px;
+  min-height: var(--android-nav-height);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: center;
-  background: rgba(4, 7, 9, 0.92);
+  background: #07090b;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .android-nav-bar button {

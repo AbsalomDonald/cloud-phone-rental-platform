@@ -223,14 +223,16 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       <section className="h5-view">
         <div className="h5-phone-workspace">
           <div className="h5-sdk-stage">
-            {!connected && (
-              <div className="phone-placeholder">
-                <h2>{labels.viewTitle}</h2>
-                <p className="small-muted">{error || labels.viewDesc}</p>
-              </div>
-            )}
+            <div className="phone-screen-area">
+              {!connected && (
+                <div className="phone-placeholder">
+                  <h2>{labels.viewTitle}</h2>
+                  <p className="small-muted">{error || labels.viewDesc}</p>
+                </div>
+              )}
 
-            <div id={viewId} className="phone-render-layer" />
+              <div id={viewId} className="phone-render-layer" />
+            </div>
             {connected && (
               <div className="android-nav-bar" aria-label="Android navigation controls">
                 <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title="返回" type="button">
