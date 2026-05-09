@@ -1,7 +1,7 @@
 "use client";
 
 import { Grid3X3, Home, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 type CloudPhoneConnectorProps = {
   apiPath: string;
@@ -64,8 +64,23 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
   const [rotation, setRotation] = useState(0);
+  const [fit, setFit] = useState({ height: 560, scale: 560 / 696, width: 436 * (560 / 696) });
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
   const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
+
+  useEffect(() => {
+    function updateFit() {
+      const availableHeight = Math.max(420, window.innerHeight - 250);
+      const height = Math.min(560, availableHeight);
+      const scale = height / 696;
+      setFit({ height, scale, width: 436 * scale });
+      window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
+    }
+
+    updateFit();
+    window.addEventListener("resize", updateFit);
+    return () => window.removeEventListener("resize", updateFit);
+  }, []);
 
   async function start() {
     setError("");
@@ -220,7 +235,14 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           </button>
         </div>
       </div>
-      <section className="h5-view">
+      <section
+        className="h5-view"
+        style={{
+          "--phone-fit-height": `${fit.height}px`,
+          "--phone-fit-width": `${fit.width}px`,
+          "--phone-scale": String(fit.scale)
+        } as React.CSSProperties}
+      >
         <div className="h5-phone-workspace">
           <div className="h5-phone-column">
             <div className="h5-sdk-stage">

@@ -1612,7 +1612,11 @@ img {
   object-fit: contain !important;
 }
 .h5-view {
-  --phone-fit-height: min(696px, calc(100dvh - 178px));
+  --phone-native-width: 436px;
+  --phone-native-height: 696px;
+  --phone-fit-height: 560px;
+  --phone-fit-width: 351px;
+  --phone-scale: 0.805;
   min-height: 0;
   display: flex;
   justify-content: center;
@@ -1627,20 +1631,16 @@ img {
 }
 
 .h5-sdk-stage {
-  width: auto;
+  width: var(--phone-fit-width);
   height: var(--phone-fit-height);
-  max-width: var(--sdk-stage-width);
-  max-height: var(--phone-fit-height);
-  aspect-ratio: 436 / 696;
+  max-width: calc(100vw - 104px);
   position: relative;
   overflow: hidden;
   background: #000;
 }
 
 .h5-phone-column {
-  --sdk-stage-width: min(436px, calc(100vw - 104px));
   width: fit-content;
-  max-width: var(--sdk-stage-width);
   height: var(--phone-fit-height);
 }
 
@@ -1667,17 +1667,21 @@ img {
 }
 
 .phone-render-layer > div {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
+  width: var(--phone-native-width) !important;
+  height: var(--phone-native-height) !important;
+  max-width: none !important;
+  max-height: none !important;
   overflow: hidden !important;
+  transform: scale(var(--phone-scale));
+  transform-origin: top left;
 }
 
 .phone-render-layer canvas,
 .phone-render-layer video {
-  width: 100% !important;
-  height: 100% !important;
+  width: var(--phone-native-width) !important;
+  height: var(--phone-native-height) !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: contain !important;
 }
 
@@ -1743,7 +1747,7 @@ img {
   }
 
   .h5-phone-column {
-    --sdk-stage-width: min(436px, calc(100vw - 76px));
+    width: var(--phone-fit-width);
   }
 
   .cloud-tool-rail {
