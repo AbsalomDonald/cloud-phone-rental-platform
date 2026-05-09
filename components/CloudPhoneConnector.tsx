@@ -222,16 +222,18 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       </div>
       <section className="h5-view">
         <div className="h5-phone-workspace">
-          <div className="h5-sdk-stage">
-            <div className="phone-screen-area">
-              {!connected && (
-                <div className="phone-placeholder">
-                  <h2>{labels.viewTitle}</h2>
-                  <p className="small-muted">{error || labels.viewDesc}</p>
-                </div>
-              )}
+          <div className="h5-phone-column">
+            <div className="h5-sdk-stage">
+              <div className="phone-screen-area">
+                {!connected && (
+                  <div className="phone-placeholder">
+                    <h2>{labels.viewTitle}</h2>
+                    <p className="small-muted">{error || labels.viewDesc}</p>
+                  </div>
+                )}
 
-              <div id={viewId} className="phone-render-layer" />
+                <div id={viewId} className="phone-render-layer" />
+              </div>
             </div>
             {connected && (
               <div className="android-nav-bar" aria-label="Android navigation controls">
