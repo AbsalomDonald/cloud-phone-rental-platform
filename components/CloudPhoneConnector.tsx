@@ -1,5 +1,6 @@
 "use client";
 
+import { Grid3X3, Home, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
 type CloudPhoneConnectorProps = {
@@ -31,9 +32,15 @@ type ArmcloudModule = {
   ArmcloudEngine?: {
     isSupported?: () => boolean | Promise<boolean>;
     new (params: Record<string, unknown>): {
+    executeAdbCommand?: (command: string) => void;
     isSupported?: () => boolean;
+    reshapeWindow?: () => void;
+    setPhoneRotation?: (type: number) => void;
     start?: () => void;
     stop?: () => void;
+    triggerKeyboardShortcut?: (metaState: number | string, actionKey: number | string, forwardOff?: boolean) => void;
+    increaseVolume?: () => void;
+    decreaseVolume?: () => void;
   };
   };
 };
@@ -56,6 +63,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [status, setStatus] = useState(labels.disconnected);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
+  const [rotation, setRotation] = useState(0);
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
   const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
 
@@ -97,6 +105,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       baseUrl: tokenPayload.baseUrl,
       token: tokenPayload.token,
       viewId,
+      toolsWidth: 56,
       
       enableControl: true,    
  
@@ -170,6 +179,19 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     engineRef.current = engine;
   }
 
+  function sendAndroidKey(sdkKeyCode: number, adbKeyCode: number) {
+    const engine = engineRef.current;
+    engine?.triggerKeyboardShortcut?.(0, sdkKeyCode);
+    engine?.executeAdbCommand?.(`input keyevent ${adbKeyCode}`);
+  }
+
+  function rotatePhone() {
+    const nextRotation = rotation === 0 ? 1 : 0;
+    setRotation(nextRotation);
+    engineRef.current?.setPhoneRotation?.(nextRotation);
+    window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 120);
+  }
+
   function stop() {
     engineRef.current?.stop?.();
     setConnected(false);
@@ -190,7 +212,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           <button className="secondary-button" onClick={start} type="button">
             {labels.reconnect}
           </button>
-          <button className="secondary-button" type="button">
+          <button className="secondary-button" onClick={rotatePhone} type="button">
             {labels.rotate}
           </button>
           <button className="primary-button" onClick={start} type="button">
@@ -199,17 +221,44 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         </div>
       </div>
       <section className="h5-view">
-      <div className="h5-sdk-stage">
-        {!connected && (
-          <div className="phone-placeholder">
-            <h2>{labels.viewTitle}</h2>
-            <p className="small-muted">{error || labels.viewDesc}</p>
+        <div className="h5-phone-workspace">
+          <div className="h5-sdk-stage">
+            {!connected && (
+              <div className="phone-placeholder">
+                <h2>{labels.viewTitle}</h2>
+                <p className="small-muted">{error || labels.viewDesc}</p>
+              </div>
+            )}
+
+            <div id={viewId} className="phone-render-layer" />
+            {connected && (
+              <div className="android-nav-bar" aria-label="Android navigation controls">
+                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title="返回" type="button">
+                  <StepBack size={22} />
+                </button>
+                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title="主页" type="button">
+                  <Home size={22} />
+                </button>
+                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title="多任务" type="button">
+                  <Grid3X3 size={22} />
+                </button>
+              </div>
+            )}
           </div>
-        )}
-    
-        <div id={viewId} className="phone-render-layer" />
-      </div>
-    </section>
+          {connected && (
+            <div className="cloud-tool-rail" aria-label="Cloud phone tools">
+              <button onClick={start} title="重连" type="button"><Wifi size={22} /><span>重连</span></button>
+              <button onClick={() => sendAndroidKey(158, 4)} title="返回" type="button"><StepBack size={22} /><span>返回</span></button>
+              <button onClick={() => sendAndroidKey(172, 3)} title="主页" type="button"><Home size={22} /><span>主页</span></button>
+              <button onClick={() => engineRef.current?.increaseVolume?.()} title="音量+" type="button"><Volume2 size={22} /><span>音量+</span></button>
+              <button onClick={() => engineRef.current?.decreaseVolume?.()} title="音量-" type="button"><Volume1 size={22} /><span>音量-</span></button>
+              <button onClick={rotatePhone} title="旋转" type="button"><RotateCw size={22} /><span>旋转</span></button>
+              <button onClick={() => sendAndroidKey(139, 187)} title="多任务" type="button"><Smartphone size={22} /><span>多任务</span></button>
+              <button onClick={() => engineRef.current?.reshapeWindow?.()} title="适配画面" type="button"><Grid3X3 size={22} /><span>适配</span></button>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
