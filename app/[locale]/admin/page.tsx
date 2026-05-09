@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Boxes, CheckCircle2, Plus } from "lucide-react";
+import { Boxes, CheckCircle2, Plus, Smartphone } from "lucide-react";
 import { DataTable } from "@/components/DataTable";
 import { MetricCard } from "@/components/MetricCard";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -40,6 +40,10 @@ export default async function AdminHomePage({ params }: { params: Promise<{ loca
           <p className="small-muted">{admin.subtitle}</p>
         </div>
         <div className="button-row" style={{ marginTop: 0 }}>
+          <Link className="secondary-button" href={localizedPath(locale, "/admin/test-phone")}>
+            <Smartphone size={17} />
+            {uiText(locale, "测试手机入口", "テスト端末", "Test Phone")}
+          </Link>
           <Link className="secondary-button" href={localizedPath(locale, "/admin/cloud-phones")}>
             <Boxes size={17} />
             {admin.actions.addDevice}

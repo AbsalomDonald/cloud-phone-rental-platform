@@ -328,6 +328,80 @@ export async function createAssignmentAction(formData: FormData) {
   redirect(`/${locale}/admin/assignments`);
 }
 
+export async function createTestPhoneAssignmentAction(formData: FormData) {
+  const locale = formLocale(formData);
+  const admin = await requireAdmin(locale);
+  const userId = required(formData, "userId");
+  const phoneId = required(formData, "phoneId");
+  const expiresAt = new Date(required(formData, "expiresAt"));
+
+  const result = await prisma.$transaction(async (tx: any) => {
+    const user = await tx.user.findFirst({
+      where: { id: userId, role: "user", status: "active" }
+    });
+    if (!user) {
+      throw new Error("Active user was not found.");
+    }
+
+    const phone = await tx.phone.findFirst({
+      where: { id: phoneId, status: "available" }
+    });
+    if (!phone) {
+      throw new Error("Available phone was not found.");
+    }
+
+    const plan = await tx.plan.findFirst({
+      orderBy: { price: "asc" },
+      where: { isActive: true }
+    });
+    if (!plan) {
+      throw new Error("Active plan was not found.");
+    }
+
+    const order = await tx.order.create({
+      data: {
+        amount: plan.price,
+        currency: plan.currency,
+        paidAt: new Date(),
+        paymentId: `admin-test-${Date.now()}`,
+        paymentProvider: "admin_test",
+        planId: plan.id,
+        planName: plan.nameZh || plan.nameEn || plan.nameJa,
+        status: "fulfilled",
+        userId
+      }
+    });
+
+    const assignment = await tx.assignment.create({
+      data: {
+        expiresAt,
+        orderId: order.id,
+        phoneId,
+        startedAt: new Date(),
+        status: "active",
+        userId
+      }
+    });
+
+    await tx.phone.update({
+      data: { status: "assigned" },
+      where: { id: phoneId }
+    });
+
+    return { assignment, order };
+  });
+
+  await logAdmin(admin.id, "test_phone_assigned", "assignment", result.assignment.id, {
+    orderId: result.order.id,
+    phoneId,
+    userId
+  });
+  revalidatePath(`/${locale}/admin/test-phone`);
+  revalidatePath(`/${locale}/admin/assignments`);
+  revalidatePath(`/${locale}/admin/orders`);
+  redirect(`/${locale}/admin/test-phone`);
+}
+
 export async function replyTicketAction(formData: FormData) {
   const locale = formLocale(formData);
   const admin = await requireAdmin(locale);
