@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>欧阳日本事业部 - 离线演示入口</title>
+  <style>
+    body{margin:0;min-height:100vh;background:#070b0f;color:#e8fbff;font-family:Arial,"Microsoft YaHei",sans-serif;display:grid;place-items:center}
+    main{width:min(760px,calc(100% - 32px));border:1px solid rgba(109,255,230,.2);border-radius:8px;background:rgba(13,22,27,.9);padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.42)}
+    h1{margin:0 0 8px;font-size:32px}
+    p{color:#8ea6ad;line-height:1.7}
+    .links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px}
+    a{display:block;border:1px solid rgba(109,255,230,.2);border-radius:8px;padding:14px 16px;color:#7dfdea;text-decoration:none;background:rgba(10,20,25,.72);font-weight:700}
+    a:hover{background:rgba(24,48,55,.84)}
+    @media(max-width:640px){.links{grid-template-columns:1fr}h1{font-size:26px}}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>欧阳日本事业部离线演示</h1>
+    <p>这些页面不需要启动本地服务，适合先看 UI 和流程。表单真实提交请使用 4173 本地预览服务。</p>
+    <div class="links">
+      <a href="zh-home.html">中文前台首页</a>
+      <a href="zh-app.html">用户个人中心</a>
+      <a href="zh-app-phones.html">我的云手机</a>
+      <a href="zh-admin.html">运营者后台</a>
+      <a href="zh-admin-support.html">后台客服工单</a>
+      <a href="zh-admin-vmos.html">VMOS 设置</a>
+    </div>
+  </main>
+</body>
+</html>

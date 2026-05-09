@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-change_me_postgres_password}@postgres:5432/${POSTGRES_DB:-cloud_phone_rental}?schema=public
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-long-random-secret-at-least-32-chars}
+      SETTINGS_SECRET: ${SETTINGS_SECRET:-change-this-other-long-random-secret-at-least-32-chars}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345!}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-}
+      COOLIFY_INIT_ON_START: ${COOLIFY_INIT_ON_START:-true}
+      RESET_ADMIN_PASSWORD_ON_INIT: ${RESET_ADMIN_PASSWORD_ON_INIT:-false}
+      ALLOW_VMOS_MOCK: ${ALLOW_VMOS_MOCK:-true}
+      VMOS_API_BASE_URL: ${VMOS_API_BASE_URL:-}
+      VMOS_H5_BASE_URL: ${VMOS_H5_BASE_URL:-}
+      VMOS_ACCESS_KEY: ${VMOS_ACCESS_KEY:-}
+      VMOS_SECRET_KEY: ${VMOS_SECRET_KEY:-}
+      VMOS_TOKEN_PATH: ${VMOS_TOKEN_PATH:-/vcpcloud/api/padApi/stsTokenByPadCode}
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cloud_phone_rental}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_postgres_password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB:-cloud_phone_rental}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+

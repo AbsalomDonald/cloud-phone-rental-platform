@@ -1,0 +1,355 @@
+{
+  "meta": {
+    "product": "Ouyang Japan Business Division",
+    "tagline": "Light cloud phone rental"
+  },
+  "nav": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Sign Up",
+    "dashboard": "Cloud Phone Console",
+    "admin": "Operations Admin"
+  },
+  "home": {
+    "eyebrow": "Cloud Android access made easier from Japan",
+    "title": "Cloud Phone Rental by Ouyang Japan",
+    "subtitle": "No physical Android phone needed. Pick a plan and open a cloud Android phone from the web for quick trials, everyday testing, or multi-device management.",
+    "primary": "View Plans",
+    "secondary": "Get Started",
+    "trust": [
+      {
+        "value": "7 days",
+        "label": "Try it first"
+      },
+      {
+        "value": "30 days",
+        "label": "Easy daily use"
+      },
+      {
+        "value": "3 languages",
+        "label": "Japanese, Chinese, English"
+      }
+    ],
+    "visual": {
+      "title": "Cloud phone console",
+      "device": "Cloud Phone #001",
+      "status": "Available",
+      "expires": "Expires",
+      "order": "Paid order",
+      "support": "Support in progress"
+    },
+    "valuesTitle": "Made To Feel Simple",
+    "valuesSubtitle": "Plans, activation, login details, renewal, and support are kept together so you do not have to hunt for information.",
+    "values": [
+      {
+        "title": "No extra phone needed",
+        "body": "After purchase, users can open their cloud phone and view device status, orders, and expiration dates in the console."
+      },
+      {
+        "title": "Open it in the browser",
+        "body": "Open the cloud phone securely in the browser without exposing internal accounts or API keys to customers."
+      },
+      {
+        "title": "Flexible rental periods",
+        "body": "Choose a 7-day trial, 30-day standard plan, or business bulk option."
+      }
+    ],
+    "flowTitle": "Getting Started Is Easy",
+    "flow": [
+      {
+        "title": "Register",
+        "body": "Create an account with email and choose your preferred language."
+      },
+      {
+        "title": "Choose a plan",
+        "body": "Start with a trial or use it for a full month."
+      },
+      {
+        "title": "Pay",
+        "body": "Complete payment by following the on-page instructions."
+      },
+      {
+        "title": "Open phone",
+        "body": "Once activated, open the cloud phone screen from the cloud phone console."
+      }
+    ],
+    "noticeTitle": "Before You Use It",
+    "notices": [
+      "App compatibility can vary.",
+      "Please follow the rules of each related service or platform.",
+      "Fraud, spam, attacks, and other abusive use are not allowed."
+    ]
+  },
+  "pricing": {
+    "title": "Pick A Plan That Fits",
+    "subtitle": "Try it for a few days, use it for a full month, or contact us for multiple devices.",
+    "cta": "Choose Plan",
+    "contact": "Contact Support",
+    "plans": [
+      {
+        "name": "Trial",
+        "label": "7-Day Trial",
+        "price": "¥980",
+        "period": "7 days",
+        "badge": "Trial",
+        "description": "A light way to try one cloud phone first.",
+        "features": [
+          "1 cloud phone",
+          "Smooth activation",
+          "Basic support",
+          "Expiration reminder"
+        ]
+      },
+      {
+        "name": "Standard",
+        "label": "30-Day Standard",
+        "price": "¥3,980",
+        "period": "30 days",
+        "badge": "Recommended",
+        "description": "A simple one-device plan for everyday use.",
+        "features": [
+          "1 cloud phone",
+          "Renewal entry",
+          "Order history",
+          "Support tickets"
+        ]
+      },
+      {
+        "name": "Business",
+        "label": "Business Bulk Plan",
+        "price": "Custom",
+        "period": "Monthly",
+        "badge": "Bulk",
+        "description": "For multi-device or longer-term use.",
+        "features": [
+          "Reserved inventory",
+          "Custom quote",
+          "Priority support",
+          "Usage review"
+        ]
+      }
+    ]
+  },
+  "faq": {
+    "title": "Common Questions",
+    "subtitle": "A few quick answers before you get started.",
+    "items": [
+      {
+        "question": "How is a cloud phone activated?",
+        "answer": "After payment is confirmed, a cloud phone is activated for the order. The launch entry, device status, and expiration date will appear in the cloud phone console."
+      },
+      {
+        "question": "Can I use it right after payment?",
+        "answer": "Activation is usually handled as soon as possible. Availability checks or safety reviews may occasionally add a short delay."
+      },
+      {
+        "question": "Will every app work?",
+        "answer": "No guarantee. App policies, region, device environment, and verification requirements can affect availability."
+      },
+      {
+        "question": "What uses are prohibited?",
+        "answer": "Fraud, spam, account theft, credential stuffing, phishing, attacks, bulk abusive registration, and illegal use are prohibited."
+      }
+    ]
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "loginSubtitle": "Log in to enter the cloud phone console and manage your assigned phone.",
+    "registerTitle": "Sign Up",
+    "registerSubtitle": "Create an account and choose your preferred language.",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "language": "Preferred language",
+    "forgot": "Forgot password",
+    "loginButton": "Login",
+    "registerButton": "Create account",
+    "demoNote": "Keep your account information secure."
+  },
+  "dashboard": {
+    "title": "Cloud Phone Console",
+    "subtitle": "Customers open and control their assigned cloud phones here, and view orders, renewals, and support tickets.",
+    "menu": [
+      "Console Home",
+      "My Cloud Phones",
+      "Orders",
+      "Renew",
+      "Support"
+    ],
+    "metrics": [
+      {
+        "label": "Active phones",
+        "value": "1"
+      },
+      {
+        "label": "Paid orders",
+        "value": "2"
+      },
+      {
+        "label": "Days left",
+        "value": "21"
+      },
+      {
+        "label": "Open tickets",
+        "value": "1"
+      }
+    ],
+    "cloudPhones": "My Cloud Phones",
+    "orders": "Orders",
+    "support": "Support Tickets",
+    "renew": "Renew",
+    "contact": "Contact Support",
+    "fields": {
+      "device": "Device",
+      "status": "Status",
+      "expires": "Expires",
+      "loginUrl": "Login URL",
+      "username": "Username",
+      "password": "Password",
+      "order": "Order",
+      "amount": "Amount",
+      "date": "Date"
+    },
+    "sampleDevice": {
+      "name": "JP-001 Cloud Phone",
+      "status": "Available",
+      "expires": "2026-06-05",
+      "loginUrl": "https://provider.example/cloud-phone/001",
+      "username": "Secure server authorization",
+      "password": "Click to reveal"
+    },
+    "supportForm": {
+      "title": "New support ticket",
+      "subject": "Subject",
+      "message": "Message",
+      "submit": "Send"
+    }
+  },
+  "admin": {
+    "title": "Operations Admin",
+    "subtitle": "Admins manage users, orders, plans, VMOS phone inventory, device assignments, support tickets, provider API settings, and operation logs.",
+    "menu": [
+      "Admin Home",
+      "Users",
+      "Orders",
+      "Plans",
+      "Cloud Phone Inventory",
+      "Assign Cloud Phone",
+      "Support Tickets",
+      "Provider Settings",
+      "Operation Logs"
+    ],
+    "metrics": [
+      {
+        "label": "Paid today",
+        "value": "3"
+      },
+      {
+        "label": "Available cloud phones",
+        "value": "8"
+      },
+      {
+        "label": "Awaiting activation",
+        "value": "2"
+      },
+      {
+        "label": "Unreplied tickets",
+        "value": "4"
+      }
+    ],
+    "actions": {
+      "addPlan": "Add plan",
+      "addDevice": "Import 云手机编号",
+      "assign": "Assign",
+      "reply": "Reply",
+      "suspend": "Suspend"
+    },
+    "tables": {
+      "latestOrders": "Latest Orders",
+      "inventory": "Cloud Phone Inventory",
+      "users": "Users",
+      "plans": "Plans",
+      "assignments": "云手机编号 Assignments",
+      "tickets": "Tickets",
+      "vmosSettings": "Provider API Settings",
+      "logs": "Logs"
+    }
+  },
+  "legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "subtitle": "Defines account responsibility, prohibited use, and suspension conditions.",
+      "sections": [
+        {
+          "heading": "Service scope",
+          "body": "The platform provides third-party cloud phone access, order management, renewals, and support. The phone infrastructure is provided by third-party suppliers."
+        },
+        {
+          "heading": "Account responsibility",
+          "body": "Users are responsible for their account information, login details, and usage. Unauthorized sharing or resale is not allowed."
+        },
+        {
+          "heading": "Prohibited use",
+          "body": "Fraud, spam, account abuse, credential stuffing, phishing, attacks, illegal content, abusive bulk registration, and prohibited risk-bypass use are not allowed."
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "subtitle": "Explains collected data, purpose, storage, and third-party services.",
+      "sections": [
+        {
+          "heading": "Data we collect",
+          "body": "We may collect email, name, preferred language, order information, support ticket content, login records, and payment status."
+        },
+        {
+          "heading": "Purpose of use",
+          "body": "Data is used for account creation, order processing, payment confirmation, cloud phone activation, reminders, support, and abuse prevention."
+        },
+        {
+          "heading": "Third-party services",
+          "body": "Payment, email delivery, and cloud phone supply may be handled by third-party providers when required for the service."
+        }
+      ]
+    },
+    "legal": {
+      "title": "Legal Disclosure",
+      "subtitle": "Displays seller, price, payment, delivery, and refund information for Japan-facing sales.",
+      "sections": [
+        {
+          "heading": "Seller information",
+          "body": "Company name, representative, address, and contact details should be added before production launch."
+        },
+        {
+          "heading": "Pricing and payment",
+          "body": "Plan pages display service prices. Stripe, PayPal, bank transfer, or other Japan payment methods can be added."
+        },
+        {
+          "heading": "Delivery timing",
+          "body": "After payment confirmation, an admin assigns a cloud phone and the user sees launch access in the cloud phone console."
+        }
+      ]
+    },
+    "refund": {
+      "title": "Refund Policy",
+      "subtitle": "Clarifies refundable and non-refundable situations.",
+      "sections": [
+        {
+          "heading": "Refundable cases",
+          "body": "A refund may be reviewed if the platform cannot provide a cloud phone after payment or a platform-side issue prevents initial use."
+        },
+        {
+          "heading": "Non-refundable cases",
+          "body": "User preference, rule violations, third-party platform restrictions, app incompatibility, or prohibited use may not qualify for refunds."
+        },
+        {
+          "heading": "How to request",
+          "body": "Users should provide order number, account email, and reason through a support ticket."
+        }
+      ]
+    }
+  }
+}
