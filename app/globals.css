@@ -1612,6 +1612,7 @@ img {
   object-fit: contain !important;
 }
 .h5-view {
+  --phone-fit-height: min(696px, calc(100dvh - 178px));
   min-height: 0;
   display: flex;
   justify-content: center;
@@ -1626,18 +1627,21 @@ img {
 }
 
 .h5-sdk-stage {
-  width: var(--sdk-stage-width);
-  min-width: 320px;
+  width: auto;
+  height: var(--phone-fit-height);
+  max-width: var(--sdk-stage-width);
+  max-height: var(--phone-fit-height);
   aspect-ratio: 436 / 696;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   background: #000;
 }
 
 .h5-phone-column {
   --sdk-stage-width: min(436px, calc(100vw - 104px));
-  width: var(--sdk-stage-width);
-  min-width: 320px;
+  width: fit-content;
+  max-width: var(--sdk-stage-width);
+  height: var(--phone-fit-height);
 }
 
 .h5-phone-workspace {
@@ -1652,7 +1656,7 @@ img {
   position: absolute;
   inset: 0;
   z-index: 5;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .phone-screen-area {
@@ -1665,12 +1669,15 @@ img {
 .phone-render-layer > div {
   width: 100% !important;
   height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
 }
 
 .phone-render-layer canvas,
 .phone-render-layer video {
-  max-width: 100% !important;
-  max-height: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: contain !important;
 }
 
@@ -1689,7 +1696,8 @@ img {
 
 .cloud-tool-rail {
   width: 58px;
-  min-height: 100%;
+  height: var(--phone-fit-height);
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
