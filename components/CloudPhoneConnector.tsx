@@ -257,6 +257,19 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
                 <div id={viewId} className="phone-render-layer" />
               </div>
             </div>
+            {connected && (
+              <div className="android-nav-bar" aria-label="Android navigation controls">
+                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title="返回" type="button">
+                  <StepBack size={22} />
+                </button>
+                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title="主页" type="button">
+                  <Home size={22} />
+                </button>
+                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title="多任务" type="button">
+                  <Grid3X3 size={22} />
+                </button>
+              </div>
+            )}
           </div>
           {connected && (
             <div className="cloud-tool-rail" aria-label="Cloud phone tools">
