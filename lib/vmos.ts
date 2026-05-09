@@ -129,7 +129,7 @@ export async function requestVmosToken(padCode: string, userId: string): Promise
   }
 
   return {
-    baseUrl: settings.h5BaseUrl || "https://openapi-hk.armcloud.net",
+    baseUrl: settings.h5BaseUrl,
     deviceInfo: { padCode, userId },
     expiresIn: Number(payload?.data?.expiresIn || payload?.expiresIn || 300),
     token

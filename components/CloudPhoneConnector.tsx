@@ -28,10 +28,13 @@ type TokenPayload = {
 };
 
 type ArmcloudModule = {
-  ArmcloudEngine?: new (params: Record<string, unknown>) => {
+  ArmcloudEngine?: {
+    isSupported?: () => boolean | Promise<boolean>;
+    new (params: Record<string, unknown>): {
     isSupported?: () => boolean;
     start?: () => void;
     stop?: () => void;
+  };
   };
 };
 
@@ -61,10 +64,17 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     setConnected(false);
     setStatus(labels.connecting);
 
-    const response = await fetch(apiPath, { method: "POST" });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      setError(payload?.error || labels.disconnected);
+    let payload: unknown;
+    try {
+      const response = await fetch(apiPath, { method: "POST" });
+      payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError((payload as { error?: string })?.error || labels.disconnected);
+        setStatus(labels.disconnected);
+        return;
+      }
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : labels.disconnected);
       setStatus(labels.disconnected);
       return;
     }
@@ -73,6 +83,11 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     const sdk = await loadSdk();
     const ArmcloudEngine = sdk?.ArmcloudEngine;
     if (!ArmcloudEngine) {
+      setError(labels.sdkMissing);
+      return;
+    }
+    const supported = await ArmcloudEngine.isSupported?.();
+    if (supported === false) {
       setError(labels.sdkMissing);
       return;
     }
@@ -117,16 +132,18 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         onConnectFail: ({ code, msg }: { code?: number; msg?: string }) => {
           console.error("VMOS onConnectFail:", code, msg);
           setConnected(false);
-          setError(msg || labels.disconnected);
+          setStatus(labels.disconnected);
+          setError(msg || (code ? `Connection failed (${code})` : labels.disconnected));
         },
         onConnectSuccess: () => {
           console.log("VMOS connected");
           setConnected(true);
           setStatus(labels.connect);
         },
-        onInit: ({ code, msg }: { code: number; msg?: string }) => {
+        onInit: ({ code, msg }: { code: number | string; msg?: string }) => {
           console.log("VMOS onInit:", code, msg);
-          if (code !== 0) {
+          if (Number(code) !== 0) {
+            setStatus(labels.disconnected);
             setError(msg || labels.disconnected);
             return;
           }
@@ -134,6 +151,15 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         },
         onErrorMessage: (event: any) => {
           console.error("VMOS onErrorMessage:", event);
+          if (event?.msg) {
+            setError(event.msg);
+          }
+        },
+        onConnectionStateChanged: (event: any) => {
+          console.log("VMOS onConnectionStateChanged:", event);
+          if (event?.msg && event?.state === 5) {
+            setError(event.msg);
+          }
         },
         onRenderedFirstFrame: () => {
           console.log("VMOS first frame rendered");

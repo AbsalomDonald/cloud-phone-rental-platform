@@ -47,7 +47,7 @@ export default async function VmosSettingsPage({ params }: { params: Promise<{ l
           </div>
           <div className="field">
             <label>{labels.h5Base}</label>
-            <input defaultValue={settings.h5BaseUrl} name="h5BaseUrl" placeholder="https://api.vmoscloud.com" />
+            <input defaultValue={settings.h5BaseUrl} name="h5BaseUrl" placeholder="https://openapi-hk.armcloud.net" />
           </div>
           <div className="field">
             <label>{labels.accessKey}</label>

@@ -71,11 +71,23 @@ export async function getSetting(keyName: string, fallback = "") {
 }
 
 export async function getVmosSettings() {
+  const h5BaseUrl = await getSetting("vmos_h5_base_url", process.env.VMOS_H5_BASE_URL ?? "");
+
   return {
     accessKey: await getSetting("vmos_access_key", process.env.VMOS_ACCESS_KEY ?? ""),
     apiBaseUrl: await getSetting("vmos_api_base_url", process.env.VMOS_API_BASE_URL ?? "https://api.vmoscloud.com"),
-    h5BaseUrl: await getSetting("vmos_h5_base_url", process.env.VMOS_H5_BASE_URL ?? "https://api.vmoscloud.com"),
+    h5BaseUrl: normalizeVmosH5BaseUrl(h5BaseUrl),
     secretKey: await getSetting("vmos_secret_key", process.env.VMOS_SECRET_KEY ?? ""),
     tokenPath: await getSetting("vmos_token_path", process.env.VMOS_TOKEN_PATH ?? "/vcpcloud/api/padApi/stsTokenByPadCode")
   };
+}
+
+export function normalizeVmosH5BaseUrl(value: string) {
+  const normalized = value.trim().replace(/\/$/, "");
+
+  if (!normalized || normalized === "https://api.vmoscloud.com" || normalized === "http://api.vmoscloud.com") {
+    return "https://openapi-hk.armcloud.net";
+  }
+
+  return normalized;
 }
