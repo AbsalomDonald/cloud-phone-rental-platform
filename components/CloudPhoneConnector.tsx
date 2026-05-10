@@ -47,9 +47,9 @@ type ArmcloudModule = {
 };
 
 const phoneSize = {
-  height: 696,
-  navHeight: 38,
-  width: 436
+  aspect: 9 / 19.5,
+  maxWidth: 430,
+  navHeight: 38
 };
 
 const toolText = {
@@ -87,7 +87,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [fullscreen, setFullscreen] = useState(false);
   const [inlineFullscreen, setInlineFullscreen] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [fit, setFit] = useState({ height: 560, navHeight: 31, scale: 560 / phoneSize.height, width: 351 });
+  const [fit, setFit] = useState({ height: 650, width: 300 });
   const engineRef = useRef<ArmcloudEngineInstance | null>(null);
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
@@ -102,18 +102,19 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       const verticalChrome = isFullscreen ? 16 : narrow ? 84 : 170;
       const availableWidth = Math.max(260, window.innerWidth - horizontalPadding - railWidth - gap);
       const availableHeight = Math.max(360, window.innerHeight - verticalChrome);
-      const totalNativeHeight = phoneSize.height + phoneSize.navHeight;
-      const maxScale = isFullscreen ? 1.6 : 1.2;
-      const scale = Math.min(maxScale, availableWidth / phoneSize.width, availableHeight / totalNativeHeight);
-      const height = phoneSize.height;
-      const navHeight = phoneSize.navHeight;
+      const maxWidth = isFullscreen ? 520 : phoneSize.maxWidth;
+      let width = Math.min(maxWidth, availableWidth);
+      let height = Math.round(width / phoneSize.aspect);
+
+      if (height > availableHeight) {
+        height = availableHeight;
+        width = Math.round(height * phoneSize.aspect);
+      }
 
       setFullscreen(isFullscreen);
       setFit({
         height,
-        navHeight,
-        scale,
-        width: phoneSize.width
+        width
       });
       window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
     }
@@ -192,6 +193,11 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       },
 
       callbacks: {
+        onChangeRotate: (_type: number, size?: { height?: number; width?: number }) => {
+          if (size?.width && size?.height) {
+            fitRenderedMedia();
+          }
+        },
         onConnectFail: ({ code, msg }: { code?: number; msg?: string }) => {
           console.error("VMOS onConnectFail:", code, msg);
           setConnected(false);
@@ -241,29 +247,40 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       window.setTimeout(() => {
         fitRenderedMedia();
         engineRef.current?.reshapeWindow?.();
+        engineRef.current?.setPhoneRotation?.(rotation);
       }, delay);
     }
   }
 
   function fitRenderedMedia() {
     const root = document.getElementById(viewId);
-    const firstChild = root?.firstElementChild as HTMLElement | null;
-    if (firstChild) {
-      firstChild.style.width = "100%";
-      firstChild.style.height = "100%";
-      firstChild.style.maxWidth = "100%";
-      firstChild.style.maxHeight = "100%";
-      firstChild.style.overflow = "hidden";
+    const media = root?.querySelector("video, canvas, iframe") as HTMLElement | null;
+
+    if (!root || !media) {
+      return;
     }
 
-    root?.querySelectorAll("canvas, video, iframe").forEach((node) => {
-      const element = node as HTMLElement;
+    let element: HTMLElement | null = media;
+    while (element && element !== root) {
+      element.style.position = "absolute";
+      element.style.inset = "0";
       element.style.width = "100%";
       element.style.height = "100%";
+      element.style.minWidth = "100%";
+      element.style.minHeight = "100%";
       element.style.maxWidth = "100%";
       element.style.maxHeight = "100%";
-      element.style.objectFit = "contain";
-    });
+      element.style.margin = "0";
+      element.style.transform = "none";
+      element.style.transformOrigin = "top left";
+      element.style.overflow = "hidden";
+
+      if (element instanceof HTMLVideoElement) {
+        element.style.objectFit = "fill";
+      }
+
+      element = element.parentElement;
+    }
   }
 
   function sendAndroidKey(sdkKeyCode: number, adbKeyCode: number) {
@@ -330,9 +347,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         className={`h5-view ${inlineFullscreen ? "is-inline-fullscreen" : ""}`}
         style={{
           "--phone-fit-height": `${fit.height}px`,
-          "--phone-fit-width": `${fit.width}px`,
-          "--phone-nav-height": `${fit.navHeight}px`,
-          "--phone-scale": String(fit.scale)
+          "--phone-fit-width": `${fit.width}px`
         } as React.CSSProperties}
       >
         <div className="h5-phone-workspace" ref={workspaceRef}>
@@ -349,19 +364,6 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
                 <div id={viewId} className="phone-render-layer" />
               </div>
             </div>
-            {connected && (
-              <div className="android-nav-bar" aria-label="Android navigation controls">
-                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title={toolText.back} type="button">
-                  <StepBack size={22} />
-                </button>
-                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title={toolText.home} type="button">
-                  <Home size={22} />
-                </button>
-                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title={toolText.recent} type="button">
-                  <Grid3X3 size={22} />
-                </button>
-              </div>
-            )}
           </div>
           {connected && (
             <div className="cloud-tool-rail" aria-label="Cloud phone tools">

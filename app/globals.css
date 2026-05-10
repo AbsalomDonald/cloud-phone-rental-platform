@@ -1612,12 +1612,8 @@ img {
   object-fit: contain !important;
 }
 .h5-view {
-  --phone-native-width: 436px;
-  --phone-native-height: 696px;
-  --phone-nav-height: 38px;
-  --phone-fit-height: 560px;
-  --phone-fit-width: 436px;
-  --phone-scale: 1;
+  --phone-fit-height: 650px;
+  --phone-fit-width: 300px;
   min-height: 0;
   display: flex;
   justify-content: center;
@@ -1649,10 +1645,9 @@ img {
 }
 
 .h5-phone-column {
-  display: grid;
-  grid-template-rows: var(--phone-fit-height) var(--phone-nav-height);
+  display: block;
   width: fit-content;
-  height: calc(var(--phone-fit-height) + var(--phone-nav-height));
+  height: var(--phone-fit-height);
 }
 
 .h5-phone-workspace {
@@ -1664,8 +1659,6 @@ img {
   height: fit-content;
   max-width: none;
   background: transparent;
-  transform: scale(var(--phone-scale));
-  transform-origin: center center;
 }
 
 .h5-phone-workspace:fullscreen {
@@ -1701,14 +1694,8 @@ img {
   transform: none !important;
 }
 
-.phone-render-layer canvas,
 .phone-render-layer iframe,
 .phone-render-layer video {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
   touch-action: none;
 }
 
@@ -1727,7 +1714,7 @@ img {
 
 .cloud-tool-rail {
   width: 58px;
-  height: calc(var(--phone-fit-height) + var(--phone-nav-height));
+  height: var(--phone-fit-height);
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1742,13 +1729,6 @@ img {
 }
 
 .cloud-tool-rail button {
-  border: 0;
-  color: #f4fffd;
-  background: transparent;
-  cursor: pointer;
-}
-
-.android-nav-bar button {
   border: 0;
   color: #f4fffd;
   background: transparent;
@@ -1770,30 +1750,9 @@ img {
   color: var(--accent-strong);
 }
 
-.android-nav-bar button:hover {
-  background: rgba(37, 224, 196, 0.14);
-  color: var(--accent-strong);
-}
-
 .cloud-tool-rail span {
   line-height: 1.05;
   white-space: nowrap;
-}
-
-.android-nav-bar {
-  z-index: 30;
-  min-height: var(--phone-nav-height);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: center;
-  background: #07090b;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.android-nav-bar button {
-  height: 100%;
-  display: grid;
-  place-items: center;
 }
 
 @media (max-width: 720px) {
