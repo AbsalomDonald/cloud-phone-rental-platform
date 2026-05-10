@@ -85,6 +85,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
   const [fullscreen, setFullscreen] = useState(false);
+  const [inlineFullscreen, setInlineFullscreen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [fit, setFit] = useState({ height: 560, navHeight: 31, scale: 560 / phoneSize.height, width: 351 });
   const engineRef = useRef<ArmcloudEngineInstance | null>(null);
@@ -93,26 +94,26 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
   useEffect(() => {
     function updateFit() {
-      const isFullscreen = Boolean(document.fullscreenElement);
+      const isFullscreen = Boolean(document.fullscreenElement) || inlineFullscreen;
       const narrow = window.innerWidth <= 720;
       const railWidth = narrow ? 46 : 58;
       const gap = narrow ? 6 : 10;
-      const horizontalPadding = isFullscreen ? 24 : narrow ? 16 : 36;
-      const verticalChrome = isFullscreen ? 24 : narrow ? 230 : 250;
+      const horizontalPadding = isFullscreen ? 16 : narrow ? 14 : 36;
+      const verticalChrome = isFullscreen ? 16 : narrow ? 84 : 170;
       const availableWidth = Math.max(260, window.innerWidth - horizontalPadding - railWidth - gap);
       const availableHeight = Math.max(360, window.innerHeight - verticalChrome);
       const totalNativeHeight = phoneSize.height + phoneSize.navHeight;
-      const maxScale = isFullscreen ? 1.45 : 1;
+      const maxScale = isFullscreen ? 1.6 : 1.2;
       const scale = Math.min(maxScale, availableWidth / phoneSize.width, availableHeight / totalNativeHeight);
-      const height = Math.floor(phoneSize.height * scale);
-      const navHeight = Math.max(32, Math.floor(phoneSize.navHeight * scale));
+      const height = phoneSize.height;
+      const navHeight = phoneSize.navHeight;
 
       setFullscreen(isFullscreen);
       setFit({
         height,
         navHeight,
         scale,
-        width: Math.floor(phoneSize.width * scale)
+        width: phoneSize.width
       });
       window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
     }
@@ -124,7 +125,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       window.removeEventListener("resize", updateFit);
       document.removeEventListener("fullscreenchange", updateFit);
     };
-  }, []);
+  }, [inlineFullscreen]);
 
   async function start() {
     setError("");
@@ -248,12 +249,19 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   }
 
   async function toggleFullscreen() {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
+    if (document.fullscreenElement || inlineFullscreen) {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+      setInlineFullscreen(false);
       return;
     }
 
-    await workspaceRef.current?.requestFullscreen();
+    try {
+      await workspaceRef.current?.requestFullscreen();
+    } catch {
+      setInlineFullscreen(true);
+    }
   }
 
   function stop() {
@@ -288,11 +296,12 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         </div>
       </div>
       <section
-        className="h5-view"
+        className={`h5-view ${inlineFullscreen ? "is-inline-fullscreen" : ""}`}
         style={{
           "--phone-fit-height": `${fit.height}px`,
           "--phone-fit-width": `${fit.width}px`,
-          "--phone-nav-height": `${fit.navHeight}px`
+          "--phone-nav-height": `${fit.navHeight}px`,
+          "--phone-scale": String(fit.scale)
         } as React.CSSProperties}
       >
         <div className="h5-phone-workspace" ref={workspaceRef}>
