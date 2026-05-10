@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid3X3, Home, Maximize2, Minimize2, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Grid3X3, Home, Maximize2, Minimize2, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 type CloudPhoneConnectorProps = {
@@ -66,6 +66,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [error, setError] = useState("");
   const [rotation, setRotation] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [toolRailCollapsed, setToolRailCollapsed] = useState(false);
   const [debugLine, setDebugLine] = useState("");
   const connectorRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
@@ -82,10 +83,10 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
     const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-    const railWidth = connected ? 46 : 0;
-    const gap = connected ? 6 : 0;
-    const padding = 8;
-    const navHeight = connected ? 38 : 0;
+    const railWidth = connected && !toolRailCollapsed ? 42 : 0;
+    const gap = connected && !toolRailCollapsed ? 2 : 0;
+    const padding = 2;
+    const navHeight = connected ? 34 : 0;
     const maxStageWidth = Math.floor(Math.min(
       viewportWidth - railWidth - gap - padding * 2,
       (viewportHeight - navHeight - padding * 2) * 9 / 16
@@ -132,7 +133,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       window.visualViewport?.removeEventListener("scroll", onViewportChange);
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
-  }, [connected, fullscreen]);
+  }, [connected, fullscreen, toolRailCollapsed]);
 
   function toLogDetails(details: unknown) {
     if (details instanceof HTMLVideoElement) {
@@ -462,6 +463,14 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     }, 80);
   }
 
+  function toggleToolRail() {
+    setToolRailCollapsed((value) => !value);
+    window.setTimeout(() => {
+      updateFullscreenSize();
+      normalizeSdkVideo();
+    }, 80);
+  }
+
   return (
     <div ref={connectorRef} className={`phone-connector${fullscreen ? " phone-connector-fullscreen" : ""}`}>
       <div className="phone-controlbar">
@@ -514,8 +523,15 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
               </div>
             )}
           </div>
-          {connected && (
+          {connected && toolRailCollapsed && (
+            <button className="cloud-tool-toggle" onClick={toggleToolRail} title="機能を開く" type="button">
+              <ChevronsLeft size={20} />
+              <span>機能</span>
+            </button>
+          )}
+          {connected && !toolRailCollapsed && (
             <div className="cloud-tool-rail" aria-label="Cloud phone tools">
+              <button className="tool-rail-collapse" onClick={toggleToolRail} title="閉じる" type="button"><ChevronsRight size={22} /><span>閉じる</span></button>
               <button onClick={start} title="再接続" type="button"><Wifi size={22} /><span>再接続</span></button>
               <button onClick={() => sendAndroidKey(158, 4)} title="戻る" type="button"><StepBack size={22} /><span>戻る</span></button>
               <button onClick={() => sendAndroidKey(172, 3)} title="ホーム" type="button"><Home size={22} /><span>ホーム</span></button>
