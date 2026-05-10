@@ -1,7 +1,7 @@
 "use client";
 
 import { Grid3X3, Home, Maximize2, Minimize2, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 type CloudPhoneConnectorProps = {
   apiPath: string;
@@ -67,11 +67,72 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [rotation, setRotation] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [debugLine, setDebugLine] = useState("");
+  const connectorRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
   const frameSizeRef = useRef({ width: 540, height: 960 });
   const reactId = useId();
   const viewIdRef = useRef(`cloud-phone-${reactId.replace(/:/g, "")}`);
   const viewId = viewIdRef.current;
+
+  function updateFullscreenSize() {
+    const root = connectorRef.current;
+    if (!root) {
+      return;
+    }
+
+    const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const railWidth = connected ? 46 : 0;
+    const gap = connected ? 6 : 0;
+    const padding = 8;
+    const navHeight = connected ? 38 : 0;
+    const maxStageWidth = Math.floor(Math.min(
+      viewportWidth - railWidth - gap - padding * 2,
+      (viewportHeight - navHeight - padding * 2) * 9 / 16
+    ));
+    const stageWidth = Math.max(180, maxStageWidth);
+
+    root.style.setProperty("--fullscreen-vw", `${Math.floor(viewportWidth)}px`);
+    root.style.setProperty("--fullscreen-vh", `${Math.floor(viewportHeight)}px`);
+    root.style.setProperty("--fullscreen-stage-width", `${stageWidth}px`);
+    root.style.setProperty("--fullscreen-total-height", `${Math.floor(stageWidth * 16 / 9 + navHeight)}px`);
+  }
+
+  useEffect(() => {
+    if (!fullscreen) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    updateFullscreenSize();
+    window.setTimeout(normalizeSdkVideo, 60);
+    window.setTimeout(normalizeSdkVideo, 260);
+
+    const onViewportChange = () => {
+      updateFullscreenSize();
+      window.setTimeout(normalizeSdkVideo, 60);
+    };
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setFullscreen(false);
+      }
+      onViewportChange();
+    };
+
+    window.addEventListener("resize", onViewportChange);
+    window.visualViewport?.addEventListener("resize", onViewportChange);
+    window.visualViewport?.addEventListener("scroll", onViewportChange);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("resize", onViewportChange);
+      window.visualViewport?.removeEventListener("resize", onViewportChange);
+      window.visualViewport?.removeEventListener("scroll", onViewportChange);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, [connected, fullscreen]);
 
   function toLogDetails(details: unknown) {
     if (details instanceof HTMLVideoElement) {
@@ -380,16 +441,29 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     setStatus(labels.disconnected);
   }
 
-  function toggleFullscreen() {
-    setFullscreen((value) => !value);
+  async function toggleFullscreen() {
+    const nextFullscreen = !fullscreen;
+    setFullscreen(nextFullscreen);
+
+    try {
+      if (nextFullscreen) {
+        await connectorRef.current?.requestFullscreen?.();
+      } else if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (fullscreenError) {
+      recordClientEvent("fullscreen-api-failed", fullscreenError instanceof Error ? fullscreenError.message : String(fullscreenError));
+    }
+
     window.setTimeout(() => {
+      updateFullscreenSize();
       engineRef.current?.reshapeWindow?.();
       normalizeSdkVideo();
     }, 80);
   }
 
   return (
-    <div className={`phone-connector${fullscreen ? " phone-connector-fullscreen" : ""}`}>
+    <div ref={connectorRef} className={`phone-connector${fullscreen ? " phone-connector-fullscreen" : ""}`}>
       <div className="phone-controlbar">
         <div>
           <strong>{labels.viewTitle}</strong>
