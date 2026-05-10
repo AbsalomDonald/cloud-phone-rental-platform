@@ -1617,7 +1617,6 @@ img {
   --phone-nav-height: 38px;
   --phone-fit-height: 560px;
   --phone-fit-width: 351px;
-  --phone-scale: 0.805;
   min-height: 0;
   display: flex;
   justify-content: center;
@@ -1634,10 +1633,10 @@ img {
 .h5-sdk-stage {
   width: var(--phone-fit-width);
   height: var(--phone-fit-height);
-  max-width: calc(100vw - 104px);
   position: relative;
   overflow: hidden;
   background: #000;
+  touch-action: none;
 }
 
 .h5-phone-column {
@@ -1653,6 +1652,15 @@ img {
   justify-content: center;
   gap: 10px;
   max-width: 100%;
+  background: transparent;
+}
+
+.h5-phone-workspace:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  background: #020608;
+  padding: 12px;
 }
 
 .phone-render-layer {
@@ -1660,6 +1668,8 @@ img {
   inset: 0;
   z-index: 5;
   overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
 }
 
 .phone-screen-area {
@@ -1670,22 +1680,22 @@ img {
 }
 
 .phone-render-layer > div {
-  width: var(--phone-native-width) !important;
-  height: var(--phone-native-height) !important;
-  max-width: none !important;
-  max-height: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   overflow: hidden !important;
-  transform: scale(var(--phone-scale));
-  transform-origin: top left;
+  transform: none !important;
 }
 
 .phone-render-layer canvas,
 .phone-render-layer video {
-  width: var(--phone-native-width) !important;
-  height: var(--phone-native-height) !important;
-  max-width: none !important;
-  max-height: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain !important;
+  touch-action: none;
 }
 
 .phone-placeholder {
@@ -1732,7 +1742,7 @@ img {
 }
 
 .cloud-tool-rail button {
-  min-height: 48px;
+  min-height: 42px;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -1773,6 +1783,10 @@ img {
 }
 
 @media (max-width: 720px) {
+  .h5-view {
+    padding: 8px;
+  }
+
   .h5-phone-workspace {
     gap: 6px;
   }
@@ -1788,7 +1802,7 @@ img {
   }
 
   .cloud-tool-rail button {
-    min-height: 42px;
+    min-height: 38px;
   }
 
   .cloud-tool-rail span {
