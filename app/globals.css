@@ -1703,9 +1703,19 @@ img {
 
 .phone-render-layer > div,
 .phone-render-layer > div > div,
-.phone-render-layer > div > div > div {
+.phone-render-layer > div > div > div,
+.phone-render-layer > div > div > div > div {
+  width: 100% !important;
+  height: 100% !important;
   min-width: 100% !important;
   min-height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  transform: none !important;
+}
+
+.phone-render-layer * {
+  box-sizing: border-box;
 }
 
 .phone-render-layer canvas,

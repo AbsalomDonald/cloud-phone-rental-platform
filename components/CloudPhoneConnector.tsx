@@ -33,6 +33,7 @@ type ArmcloudEngineInstance = {
   executeAdbCommand?: (command: string) => void;
   increaseVolume?: () => void;
   reshapeWindow?: () => void;
+  setViewSize?: (width: number, height: number, rotateType?: 0 | 1) => void;
   setPhoneRotation?: (type: number) => void;
   start?: () => void;
   stop?: () => void;
@@ -92,6 +93,26 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
 
+  function syncSdkViewSize() {
+    const root = document.getElementById(viewId);
+    if (!root) {
+      return;
+    }
+
+    const width = Math.round(root.clientWidth || fit.width);
+    const height = Math.round(root.clientHeight || fit.height);
+    engineRef.current?.setViewSize?.(width, height, rotation as 0 | 1);
+    engineRef.current?.reshapeWindow?.();
+
+    for (const element of Array.from(root.querySelectorAll<HTMLElement>("div, canvas, video"))) {
+      element.style.width = "100%";
+      element.style.height = "100%";
+      element.style.maxWidth = "100%";
+      element.style.maxHeight = "100%";
+      element.style.objectFit = "contain";
+    }
+  }
+
   useEffect(() => {
     function updateFit() {
       const isFullscreen = Boolean(document.fullscreenElement) || inlineFullscreen;
@@ -115,7 +136,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         scale,
         width: phoneSize.width
       });
-      window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
+      window.setTimeout(syncSdkViewSize, 80);
     }
 
     updateFit();
@@ -125,7 +146,22 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       window.removeEventListener("resize", updateFit);
       document.removeEventListener("fullscreenchange", updateFit);
     };
-  }, [inlineFullscreen]);
+  }, [inlineFullscreen, rotation]);
+
+  useEffect(() => {
+    if (!connected) {
+      return;
+    }
+
+    syncSdkViewSize();
+    const interval = window.setInterval(syncSdkViewSize, 500);
+    const timeout = window.setTimeout(() => window.clearInterval(interval), 5000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+    };
+  }, [connected, fit.height, fit.width, rotation]);
 
   async function start() {
     setError("");
@@ -202,7 +238,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           console.log("VMOS connected");
           setConnected(true);
           setStatus(labels.connect);
-          window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 120);
+          window.setTimeout(syncSdkViewSize, 120);
         },
         onInit: ({ code, msg }: { code: number | string; msg?: string }) => {
           console.log("VMOS onInit:", code, msg);
@@ -227,7 +263,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         },
         onRenderedFirstFrame: () => {
           console.log("VMOS first frame rendered");
-          window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
+          window.setTimeout(syncSdkViewSize, 80);
         }
       }
     });
@@ -245,7 +281,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     const nextRotation = rotation === 0 ? 1 : 0;
     setRotation(nextRotation);
     engineRef.current?.setPhoneRotation?.(nextRotation);
-    window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 120);
+    window.setTimeout(syncSdkViewSize, 120);
   }
 
   async function toggleFullscreen() {
@@ -341,7 +377,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
               <button onClick={() => engineRef.current?.decreaseVolume?.()} title={toolText.volumeDown} type="button"><Volume1 size={22} /><span>{toolText.volumeDown}</span></button>
               <button onClick={rotatePhone} title={toolText.rotate} type="button"><RotateCw size={22} /><span>{toolText.rotate}</span></button>
               <button onClick={() => sendAndroidKey(139, 187)} title={toolText.recent} type="button"><Smartphone size={22} /><span>{toolText.recent}</span></button>
-              <button onClick={() => engineRef.current?.reshapeWindow?.()} title={toolText.adjustTitle} type="button"><Grid3X3 size={22} /><span>{toolText.adjust}</span></button>
+              <button onClick={syncSdkViewSize} title={toolText.adjustTitle} type="button"><Grid3X3 size={22} /><span>{toolText.adjust}</span></button>
               <button onClick={toggleFullscreen} title={fullscreen ? toolText.windowed : toolText.fullscreen} type="button">
                 {fullscreen ? <Minimize2 size={22} /> : <Maximize2 size={22} />}
                 <span>{fullscreen ? toolText.windowed : toolText.fullscreen}</span>
