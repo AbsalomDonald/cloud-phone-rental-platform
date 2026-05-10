@@ -206,7 +206,6 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           console.log("VMOS connected");
           setConnected(true);
           setStatus(labels.connect);
-          scheduleReshape();
         },
         onInit: ({ code, msg }: { code: number | string; msg?: string }) => {
           console.log("VMOS onInit:", code, msg);
@@ -231,22 +230,11 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         },
         onRenderedFirstFrame: () => {
           console.log("VMOS first frame rendered");
-          scheduleReshape();
         }
       }
     });
 
     engineRef.current = engine;
-    scheduleReshape();
-  }
-
-  function scheduleReshape() {
-    for (const delay of [60, 180, 420, 900]) {
-      window.setTimeout(() => {
-        engineRef.current?.reshapeWindow?.();
-        engineRef.current?.setPhoneRotation?.(rotation);
-      }, delay);
-    }
   }
 
   function sendAndroidKey(sdkKeyCode: number, adbKeyCode: number) {
