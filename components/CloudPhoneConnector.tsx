@@ -68,6 +68,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [fullscreen, setFullscreen] = useState(false);
   const [debugLine, setDebugLine] = useState("");
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
+  const frameSizeRef = useRef({ width: 540, height: 960 });
   const reactId = useId();
   const viewIdRef = useRef(`cloud-phone-${reactId.replace(/:/g, "")}`);
   const viewId = viewIdRef.current;
@@ -114,7 +115,55 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     }
   }
 
+  function fitSdkSurface(frameSize = frameSizeRef.current) {
+    const view = document.getElementById(viewId) as HTMLElement | null;
+    const screen = view?.closest(".phone-screen-area") as HTMLElement | null;
+    if (!view || !screen) {
+      return;
+    }
+
+    const screenRect = screen.getBoundingClientRect();
+    const frameWidth = Math.max(1, frameSize.width || 540);
+    const frameHeight = Math.max(1, frameSize.height || 960);
+    const scale = Math.min(screenRect.width / frameWidth, screenRect.height / frameHeight);
+    const renderWidth = Math.max(1, Math.floor(frameWidth * scale));
+    const renderHeight = Math.max(1, Math.floor(frameHeight * scale));
+
+    view.style.width = "100%";
+    view.style.height = "100%";
+    view.style.left = "0";
+    view.style.top = "0";
+    view.style.right = "auto";
+    view.style.bottom = "auto";
+    view.style.transform = "none";
+
+    const sdkRoot = view.firstElementChild as HTMLElement | null;
+    if (sdkRoot) {
+      sdkRoot.style.width = `${renderWidth}px`;
+      sdkRoot.style.height = `${renderHeight}px`;
+      sdkRoot.style.maxWidth = "100%";
+      sdkRoot.style.maxHeight = "100%";
+      sdkRoot.style.flex = "0 0 auto";
+      sdkRoot.style.position = "relative";
+      sdkRoot.style.overflow = "hidden";
+    }
+
+    view.querySelectorAll<HTMLElement>("div").forEach((node) => {
+      if (node !== sdkRoot) {
+        node.style.width = "100%";
+        node.style.height = "100%";
+      }
+    });
+
+    view.querySelectorAll<HTMLVideoElement | HTMLCanvasElement>("video, canvas").forEach((node) => {
+      node.style.width = "100%";
+      node.style.height = "100%";
+      node.style.objectFit = "contain";
+    });
+  }
+
   function normalizeSdkVideo() {
+    fitSdkSurface();
     const view = document.getElementById(viewId);
     const video = view?.querySelector("video") as HTMLVideoElement | null;
     if (!video) {
@@ -132,11 +181,25 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     video.style.objectFit = "contain";
 
     const rect = video.getBoundingClientRect();
+    const viewRect = view?.getBoundingClientRect();
+    const sdkRootRect = (view?.firstElementChild as HTMLElement | null)?.getBoundingClientRect();
     recordClientEvent("video-probe", {
       videoWidth: video.videoWidth,
       videoHeight: video.videoHeight,
       readyState: video.readyState,
       paused: video.paused,
+      view: viewRect
+        ? {
+            width: Math.round(viewRect.width),
+            height: Math.round(viewRect.height)
+          }
+        : null,
+      sdkRoot: sdkRootRect
+        ? {
+            width: Math.round(sdkRootRect.width),
+            height: Math.round(sdkRootRect.height)
+          }
+        : null,
       rect: {
         width: Math.round(rect.width),
         height: Math.round(rect.height)
@@ -281,8 +344,14 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         },
         onRenderedFirstFrame: (event: any) => {
           recordClientEvent("first-frame", event);
+          if (event?.width && event?.height) {
+            frameSizeRef.current = { width: Number(event.width), height: Number(event.height) };
+          }
           setHasFirstFrame(true);
           normalizeSdkVideo();
+          window.setTimeout(normalizeSdkVideo, 80);
+          window.setTimeout(normalizeSdkVideo, 400);
+          window.setTimeout(normalizeSdkVideo, 1200);
         }
       }
     });
