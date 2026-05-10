@@ -1,14 +1,22 @@
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import { Footer } from "@/components/Footer";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#03070a"
+};
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale: rawLocale } = await params;
   if (!isLocale(rawLocale)) {
     return {};
@@ -18,7 +26,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   return {
     title: `${dictionary.meta.product} | ${dictionary.meta.tagline}`,
-    description: dictionary.home.subtitle
+    description: dictionary.home.subtitle,
+    manifest: "/manifest.webmanifest",
+    applicationName: dictionary.meta.product,
+    icons: {
+      icon: "/icon.svg",
+      apple: "/icon.svg"
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: dictionary.meta.product
+    },
+    formatDetection: {
+      telephone: false
+    }
   };
 }
 

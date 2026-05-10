@@ -448,7 +448,8 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
     try {
       if (nextFullscreen) {
-        await connectorRef.current?.requestFullscreen?.();
+        const fullscreenTarget = connectorRef.current ?? document.documentElement;
+        await fullscreenTarget.requestFullscreen?.({ navigationUI: "hide" } as FullscreenOptions);
       } else if (document.fullscreenElement) {
         await document.exitFullscreen();
       }

@@ -1,0 +1,18 @@
+{
+  "name": "欧陽日本事業部 クラウドスマホ",
+  "short_name": "クラウドスマホ",
+  "start_url": "/ja/app/phones/HK-002",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#03070a",
+  "theme_color": "#03070a",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
