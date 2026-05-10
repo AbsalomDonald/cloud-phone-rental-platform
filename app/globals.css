@@ -1685,13 +1685,6 @@ img {
   touch-action: none;
 }
 
-.phone-render-layer *,
-.phone-render-layer iframe,
-.phone-render-layer canvas,
-.phone-render-layer video {
-  box-sizing: border-box !important;
-}
-
 .phone-screen-area {
   position: absolute;
   inset: 0;
@@ -1706,21 +1699,6 @@ img {
   max-height: 100% !important;
   overflow: hidden !important;
   transform: none !important;
-}
-
-.phone-render-layer > div,
-.phone-render-layer > div > div,
-.phone-render-layer > div > div > div,
-.phone-render-layer > div > div > div > div {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 100% !important;
-  min-height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  margin: 0 !important;
 }
 
 .phone-render-layer canvas,

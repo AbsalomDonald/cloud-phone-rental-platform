@@ -238,8 +238,32 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
   function scheduleReshape() {
     for (const delay of [60, 180, 420, 900]) {
-      window.setTimeout(() => engineRef.current?.reshapeWindow?.(), delay);
+      window.setTimeout(() => {
+        fitRenderedMedia();
+        engineRef.current?.reshapeWindow?.();
+      }, delay);
     }
+  }
+
+  function fitRenderedMedia() {
+    const root = document.getElementById(viewId);
+    const firstChild = root?.firstElementChild as HTMLElement | null;
+    if (firstChild) {
+      firstChild.style.width = "100%";
+      firstChild.style.height = "100%";
+      firstChild.style.maxWidth = "100%";
+      firstChild.style.maxHeight = "100%";
+      firstChild.style.overflow = "hidden";
+    }
+
+    root?.querySelectorAll("canvas, video, iframe").forEach((node) => {
+      const element = node as HTMLElement;
+      element.style.width = "100%";
+      element.style.height = "100%";
+      element.style.maxWidth = "100%";
+      element.style.maxHeight = "100%";
+      element.style.objectFit = "contain";
+    });
   }
 
   function sendAndroidKey(sdkKeyCode: number, adbKeyCode: number) {
