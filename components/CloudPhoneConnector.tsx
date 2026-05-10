@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid3X3, Home, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
+import { Grid3X3, Home, Maximize2, Minimize2, RotateCw, Smartphone, StepBack, Volume1, Volume2, Wifi } from "lucide-react";
 import { useId, useRef, useState } from "react";
 
 type CloudPhoneConnectorProps = {
@@ -62,14 +62,98 @@ async function loadSdk(): Promise<ArmcloudModule | null> {
 export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProps) {
   const [status, setStatus] = useState(labels.disconnected);
   const [connected, setConnected] = useState(false);
+  const [hasFirstFrame, setHasFirstFrame] = useState(false);
   const [error, setError] = useState("");
   const [rotation, setRotation] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [debugLine, setDebugLine] = useState("");
   const engineRef = useRef<Awaited<ReturnType<typeof loadSdk>> extends { ArmcloudEngine?: new (...args: any[]) => infer T } ? T : any>(null);
-  const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
+  const reactId = useId();
+  const viewIdRef = useRef(`cloud-phone-${reactId.replace(/:/g, "")}`);
+  const viewId = viewIdRef.current;
+
+  function toLogDetails(details: unknown) {
+    if (details instanceof HTMLVideoElement) {
+      return {
+        tag: "video",
+        videoWidth: details.videoWidth,
+        videoHeight: details.videoHeight,
+        readyState: details.readyState,
+        paused: details.paused
+      };
+    }
+    if (details instanceof Error) {
+      return { name: details.name, message: details.message };
+    }
+    return details;
+  }
+
+  function recordClientEvent(name: string, details?: unknown) {
+    const safeDetails = toLogDetails(details);
+    let text = "";
+    try {
+      text = safeDetails ? JSON.stringify(safeDetails) : "";
+    } catch {
+      text = String(safeDetails);
+    }
+    const line = `${name}${text ? ` ${text.slice(0, 180)}` : ""}`;
+    setDebugLine(line);
+    console.log(`VMOS ${name}:`, safeDetails ?? "");
+    fetch("/api/client-events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, details: text, viewId })
+    }).catch(() => {});
+  }
+
+  function clearSdkView() {
+    const view = document.getElementById(viewId);
+    if (view) {
+      view.replaceChildren();
+      view.removeAttribute("style");
+    }
+  }
+
+  function normalizeSdkVideo() {
+    const view = document.getElementById(viewId);
+    const video = view?.querySelector("video") as HTMLVideoElement | null;
+    if (!video) {
+      recordClientEvent("video-missing");
+      return;
+    }
+
+    video.muted = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.style.width = "100%";
+    video.style.height = "100%";
+    video.style.objectFit = "contain";
+
+    const rect = video.getBoundingClientRect();
+    recordClientEvent("video-probe", {
+      videoWidth: video.videoWidth,
+      videoHeight: video.videoHeight,
+      readyState: video.readyState,
+      paused: video.paused,
+      rect: {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height)
+      }
+    });
+
+    video.play().catch((playError) => {
+      recordClientEvent("video-play-failed", playError instanceof Error ? playError.message : String(playError));
+    });
+  }
 
   async function start() {
+    engineRef.current?.stop?.();
+    clearSdkView();
     setError("");
     setConnected(false);
+    setHasFirstFrame(false);
     setStatus(labels.connecting);
 
     let payload: unknown;
@@ -139,18 +223,20 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
     
       callbacks: {
         onConnectFail: ({ code, msg }: { code?: number; msg?: string }) => {
-          console.error("VMOS onConnectFail:", code, msg);
+          recordClientEvent("connect-fail", { code, msg });
           setConnected(false);
           setStatus(labels.disconnected);
           setError(msg || (code ? `Connection failed (${code})` : labels.disconnected));
         },
         onConnectSuccess: () => {
-          console.log("VMOS connected");
+          recordClientEvent("connect-success");
           setConnected(true);
           setStatus(labels.connect);
+          window.setTimeout(normalizeSdkVideo, 300);
+          window.setTimeout(normalizeSdkVideo, 1200);
         },
         onInit: ({ code, msg }: { code: number | string; msg?: string }) => {
-          console.log("VMOS onInit:", code, msg);
+          recordClientEvent("init", { code, msg });
           if (Number(code) !== 0) {
             setStatus(labels.disconnected);
             setError(msg || labels.disconnected);
@@ -159,19 +245,44 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           engine.start?.();
         },
         onErrorMessage: (event: any) => {
-          console.error("VMOS onErrorMessage:", event);
+          recordClientEvent("error-message", event);
           if (event?.msg) {
             setError(event.msg);
           }
         },
         onConnectionStateChanged: (event: any) => {
-          console.log("VMOS onConnectionStateChanged:", event);
+          recordClientEvent("connection-state", event);
           if (event?.msg && event?.state === 5) {
             setError(event.msg);
           }
         },
-        onRenderedFirstFrame: () => {
-          console.log("VMOS first frame rendered");
+        onAutoplayFailed: (event: any) => {
+          recordClientEvent("autoplay-failed", event);
+          normalizeSdkVideo();
+        },
+        onVideoInit: (event: any) => {
+          recordClientEvent("video-init", event);
+          normalizeSdkVideo();
+        },
+        onVideoError: (event: any) => {
+          recordClientEvent("video-error", event);
+          setError(event?.message || event?.msg || "Video error");
+        },
+        onProgress: (event: any) => {
+          recordClientEvent("progress", event);
+        },
+        onChangeResolution: (event: any) => {
+          recordClientEvent("resolution", event);
+          window.setTimeout(normalizeSdkVideo, 60);
+        },
+        onChangeRotate: (type: number, size: unknown) => {
+          recordClientEvent("rotate-change", { type, size });
+          window.setTimeout(normalizeSdkVideo, 60);
+        },
+        onRenderedFirstFrame: (event: any) => {
+          recordClientEvent("first-frame", event);
+          setHasFirstFrame(true);
+          normalizeSdkVideo();
         }
       }
     });
@@ -194,12 +305,22 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
   function stop() {
     engineRef.current?.stop?.();
+    clearSdkView();
     setConnected(false);
+    setHasFirstFrame(false);
     setStatus(labels.disconnected);
   }
 
+  function toggleFullscreen() {
+    setFullscreen((value) => !value);
+    window.setTimeout(() => {
+      engineRef.current?.reshapeWindow?.();
+      normalizeSdkVideo();
+    }, 80);
+  }
+
   return (
-    <div className="phone-connector">
+    <div className={`phone-connector${fullscreen ? " phone-connector-fullscreen" : ""}`}>
       <div className="phone-controlbar">
         <div>
           <strong>{labels.viewTitle}</strong>
@@ -225,10 +346,11 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           <div className="h5-phone-column">
             <div className="h5-sdk-stage">
               <div className="phone-screen-area">
-                {!connected && (
+                {(!connected || !hasFirstFrame) && (
                   <div className="phone-placeholder">
                     <h2>{labels.viewTitle}</h2>
-                    <p className="small-muted">{error || labels.viewDesc}</p>
+                    <p className="small-muted">{error || (connected ? "画面を読み込み中..." : labels.viewDesc)}</p>
+                    {debugLine && <p className="phone-debug-line">{debugLine}</p>}
                   </div>
                 )}
 
@@ -237,13 +359,13 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
             </div>
             {connected && (
               <div className="android-nav-bar" aria-label="Android navigation controls">
-                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title="返回" type="button">
+                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title="戻る" type="button">
                   <StepBack size={22} />
                 </button>
-                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title="主页" type="button">
+                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title="ホーム" type="button">
                   <Home size={22} />
                 </button>
-                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title="多任务" type="button">
+                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title="履歴" type="button">
                   <Grid3X3 size={22} />
                 </button>
               </div>
@@ -251,14 +373,18 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
           </div>
           {connected && (
             <div className="cloud-tool-rail" aria-label="Cloud phone tools">
-              <button onClick={start} title="重连" type="button"><Wifi size={22} /><span>重连</span></button>
-              <button onClick={() => sendAndroidKey(158, 4)} title="返回" type="button"><StepBack size={22} /><span>返回</span></button>
-              <button onClick={() => sendAndroidKey(172, 3)} title="主页" type="button"><Home size={22} /><span>主页</span></button>
+              <button onClick={start} title="再接続" type="button"><Wifi size={22} /><span>再接続</span></button>
+              <button onClick={() => sendAndroidKey(158, 4)} title="戻る" type="button"><StepBack size={22} /><span>戻る</span></button>
+              <button onClick={() => sendAndroidKey(172, 3)} title="ホーム" type="button"><Home size={22} /><span>ホーム</span></button>
               <button onClick={() => engineRef.current?.increaseVolume?.()} title="音量+" type="button"><Volume2 size={22} /><span>音量+</span></button>
               <button onClick={() => engineRef.current?.decreaseVolume?.()} title="音量-" type="button"><Volume1 size={22} /><span>音量-</span></button>
-              <button onClick={rotatePhone} title="旋转" type="button"><RotateCw size={22} /><span>旋转</span></button>
-              <button onClick={() => sendAndroidKey(139, 187)} title="多任务" type="button"><Smartphone size={22} /><span>多任务</span></button>
-              <button onClick={() => engineRef.current?.reshapeWindow?.()} title="适配画面" type="button"><Grid3X3 size={22} /><span>适配</span></button>
+              <button onClick={rotatePhone} title="回転" type="button"><RotateCw size={22} /><span>回転</span></button>
+              <button onClick={() => sendAndroidKey(139, 187)} title="履歴" type="button"><Smartphone size={22} /><span>履歴</span></button>
+              <button onClick={() => engineRef.current?.reshapeWindow?.()} title="調整" type="button"><Grid3X3 size={22} /><span>調整</span></button>
+              <button onClick={toggleFullscreen} title={fullscreen ? "通常表示" : "全画面"} type="button">
+                {fullscreen ? <Minimize2 size={22} /> : <Maximize2 size={22} />}
+                <span>{fullscreen ? "通常表示" : "全画面"}</span>
+              </button>
             </div>
           )}
         </div>

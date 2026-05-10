@@ -1627,20 +1627,20 @@ img {
 
 .h5-sdk-stage {
   width: var(--sdk-stage-width);
-  min-width: 320px;
-  aspect-ratio: 436 / 696;
+  min-width: 0;
+  aspect-ratio: 9 / 16;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   background: #000;
 }
 
 .h5-phone-column {
-  --sdk-stage-width: min(436px, calc(100vw - 104px));
+  --sdk-stage-width: min(436px, calc(100vw - 104px), calc((100vh - 190px) * 9 / 16));
   display: grid;
   grid-template-rows: auto 38px;
   align-content: center;
   width: var(--sdk-stage-width);
-  min-width: 320px;
+  min-width: 0;
 }
 
 .h5-phone-workspace {
@@ -1655,7 +1655,12 @@ img {
   position: absolute;
   inset: 0;
   z-index: 5;
-  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
 }
 
 .phone-screen-area {
@@ -1665,16 +1670,12 @@ img {
   background: #000;
 }
 
-.phone-render-layer > div {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.phone-render-layer canvas,
-.phone-render-layer video {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
+.phone-render-layer > div,
+.phone-render-layer video,
+.phone-render-layer canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .phone-placeholder {
@@ -1688,6 +1689,15 @@ img {
   color: #7fffd4;
   text-align: center;
   pointer-events: none;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.phone-debug-line {
+  max-width: min(92%, 420px);
+  margin: 10px auto 0;
+  color: rgba(232, 251, 255, 0.72);
+  font-size: 11px;
+  overflow-wrap: anywhere;
 }
 
 .cloud-tool-rail {
@@ -1751,12 +1761,40 @@ img {
 }
 
 @media (max-width: 720px) {
+  .phone-stage {
+    min-height: 100dvh;
+  }
+
+  .phone-controlbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .phone-controlbar .button-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+
+  .phone-controlbar .primary-button,
+  .phone-controlbar .secondary-button {
+    width: 100%;
+  }
+
+  .h5-view {
+    padding: 10px;
+  }
+
   .h5-phone-workspace {
     gap: 6px;
+    width: 100%;
+    justify-content: center;
   }
 
   .h5-phone-column {
-    --sdk-stage-width: min(436px, calc(100vw - 76px));
+    --sdk-stage-width: min(calc(100vw - 74px), calc((100dvh - 230px) * 9 / 16));
   }
 
   .cloud-tool-rail {
@@ -1772,4 +1810,28 @@ img {
   .cloud-tool-rail span {
     font-size: 9px;
   }
+}
+
+.phone-connector-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  min-height: 100dvh;
+  background: #03070a;
+}
+
+.phone-connector-fullscreen .phone-controlbar {
+  display: none;
+}
+
+.phone-connector-fullscreen .h5-view {
+  width: 100%;
+  height: 100dvh;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+}
+
+.phone-connector-fullscreen .h5-phone-column {
+  --sdk-stage-width: min(calc(100vw - 76px), calc((100dvh - 54px) * 9 / 16));
 }
