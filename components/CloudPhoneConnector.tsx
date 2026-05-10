@@ -83,12 +83,10 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
 
     const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-    const railWidth = connected && !toolRailCollapsed ? 42 : 0;
-    const gap = connected && !toolRailCollapsed ? 2 : 0;
-    const padding = 2;
+    const padding = 0;
     const navHeight = connected ? 34 : 0;
     const maxStageWidth = Math.floor(Math.min(
-      viewportWidth - railWidth - gap - padding * 2,
+      viewportWidth - padding * 2,
       (viewportHeight - navHeight - padding * 2) * 9 / 16
     ));
     const stageWidth = Math.max(180, maxStageWidth);
