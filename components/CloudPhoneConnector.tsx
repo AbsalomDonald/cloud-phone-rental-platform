@@ -87,7 +87,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   const [fullscreen, setFullscreen] = useState(false);
   const [inlineFullscreen, setInlineFullscreen] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const [fit, setFit] = useState({ height: 650, width: 300 });
+  const [fit, setFit] = useState({ height: 612, navHeight: 38, width: 300 });
   const engineRef = useRef<ArmcloudEngineInstance | null>(null);
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const viewId = `cloud-phone-${useId().replace(/:/g, "")}`;
@@ -101,7 +101,8 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       const horizontalPadding = isFullscreen ? 16 : narrow ? 14 : 36;
       const verticalChrome = isFullscreen ? 16 : narrow ? 84 : 170;
       const availableWidth = Math.max(260, window.innerWidth - horizontalPadding - railWidth - gap);
-      const availableHeight = Math.max(360, window.innerHeight - verticalChrome);
+      const navHeight = phoneSize.navHeight;
+      const availableHeight = Math.max(360, window.innerHeight - verticalChrome - navHeight);
       const maxWidth = isFullscreen ? 520 : phoneSize.maxWidth;
       let width = Math.min(maxWidth, availableWidth);
       let height = Math.round(width / phoneSize.aspect);
@@ -114,6 +115,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       setFullscreen(isFullscreen);
       setFit({
         height,
+        navHeight,
         width
       });
       window.setTimeout(() => engineRef.current?.reshapeWindow?.(), 80);
@@ -193,11 +195,7 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
       },
 
       callbacks: {
-        onChangeRotate: (_type: number, size?: { height?: number; width?: number }) => {
-          if (size?.width && size?.height) {
-            fitRenderedMedia();
-          }
-        },
+        onChangeRotate: () => {},
         onConnectFail: ({ code, msg }: { code?: number; msg?: string }) => {
           console.error("VMOS onConnectFail:", code, msg);
           setConnected(false);
@@ -245,41 +243,9 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
   function scheduleReshape() {
     for (const delay of [60, 180, 420, 900]) {
       window.setTimeout(() => {
-        fitRenderedMedia();
         engineRef.current?.reshapeWindow?.();
         engineRef.current?.setPhoneRotation?.(rotation);
       }, delay);
-    }
-  }
-
-  function fitRenderedMedia() {
-    const root = document.getElementById(viewId);
-    const media = root?.querySelector("video, canvas, iframe") as HTMLElement | null;
-
-    if (!root || !media) {
-      return;
-    }
-
-    let element: HTMLElement | null = media;
-    while (element && element !== root) {
-      element.style.position = "absolute";
-      element.style.inset = "0";
-      element.style.width = "100%";
-      element.style.height = "100%";
-      element.style.minWidth = "100%";
-      element.style.minHeight = "100%";
-      element.style.maxWidth = "100%";
-      element.style.maxHeight = "100%";
-      element.style.margin = "0";
-      element.style.transform = "none";
-      element.style.transformOrigin = "top left";
-      element.style.overflow = "hidden";
-
-      if (element instanceof HTMLVideoElement) {
-        element.style.objectFit = "fill";
-      }
-
-      element = element.parentElement;
     }
   }
 
@@ -347,7 +313,8 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
         className={`h5-view ${inlineFullscreen ? "is-inline-fullscreen" : ""}`}
         style={{
           "--phone-fit-height": `${fit.height}px`,
-          "--phone-fit-width": `${fit.width}px`
+          "--phone-fit-width": `${fit.width}px`,
+          "--phone-nav-height": `${fit.navHeight}px`
         } as React.CSSProperties}
       >
         <div className="h5-phone-workspace" ref={workspaceRef}>
@@ -364,6 +331,19 @@ export function CloudPhoneConnector({ apiPath, labels }: CloudPhoneConnectorProp
                 <div id={viewId} className="phone-render-layer" />
               </div>
             </div>
+            {connected && (
+              <div className="android-nav-bar" aria-label="Android navigation controls">
+                <button aria-label="Back" onClick={() => sendAndroidKey(158, 4)} title={toolText.back} type="button">
+                  <StepBack size={22} />
+                </button>
+                <button aria-label="Home" onClick={() => sendAndroidKey(172, 3)} title={toolText.home} type="button">
+                  <Home size={22} />
+                </button>
+                <button aria-label="Recent apps" onClick={() => sendAndroidKey(139, 187)} title={toolText.recent} type="button">
+                  <Grid3X3 size={22} />
+                </button>
+              </div>
+            )}
           </div>
           {connected && (
             <div className="cloud-tool-rail" aria-label="Cloud phone tools">
